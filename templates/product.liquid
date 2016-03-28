@@ -1,0 +1,262 @@
+  <header>
+    <div class="row show-for-medium-up">
+      <div class="columns">
+        {% if settings.product-breadcrumbs-show %}
+          {% include 'snippet-breadcrumbs' %}
+        {% endif %}
+      </div>
+    </div>
+    <div class="previous-next row">
+      {% if collection %}
+        {% if collection.previous_product or collection.next_product %}
+          <div class="previous columns large-3 small-6"> 
+            {% if collection.previous_product %}
+              {% capture prev_url %}{{ collection.previous_product}}{% endcapture %}
+              {% capture prev_product_text %}<span aria-hidden="true" class="glyph arrow-left"></span> Previous Item{% endcapture %}
+              <span class="left">{{ prev_product_text | link_to: prev_url }}</span>
+            {% endif %}
+            <div class="border-decoration show-for-large-up"></div>
+          </div>
+
+          <div class="next columns large-3 large-offset-6 small-6">
+            {% if collection.next_product %}
+              {% capture next_url %}{{ collection.next_product}}{% endcapture %}
+              {% capture next_product_text %}Next Item <span aria-hidden="true" class="glyph arrow-right"></span>{% endcapture %}
+              <span class="right">{{ next_product_text | link_to: next_url }}</span>
+            {% endif %}
+            <div class="border-decoration show-for-large-up"></div>
+          </div>
+        {% endif %}
+      {% endif %}
+    </div>
+  </header>
+
+  <article class="row" itemscope itemtype="http://schema.org/Product">
+    <meta itemprop="url" content="{{ shop.url }}{{ product.url }}" />
+    <meta itemprop="image" content="{{ product.featured_image.src | product_img_url: 'grande' }}" />
+
+    <div class="left-column left columns large-3">
+    
+    <form class="custom cart-form" action="/cart/add" method="post" enctype="multipart/form-data">
+
+        <h1 class="page-title" itemprop="name">{{ product.title }}</h1>
+        {% if settings.product-brand-show %}
+        {% assign product_vendor_handle = product.vendor | handle %}
+        {% if collections[product_vendor_handle].handle == product_vendor_handle %}
+          {% assign vendor_url = collections[product_vendor_handle].url %}
+        {% else %}
+          {% assign vendor_url = product.vendor | url_for_vendor %}
+        {% endif %}
+        <h2 class="vendor" itemprop="brand">{{ product.vendor | link_to: vendor_url }}</h2>
+        {% endif %}
+        
+        <div class="prices" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+          <meta itemprop="priceCurrency" content="{{ shop.currency }}" />
+          {% if product.available %}
+          <link itemprop="availability" href="http://schema.org/InStock" />
+          {% else %}
+          <link itemprop="availability" href="http://schema.org/OutOfStock" />
+          {% endif %}
+          <p>
+            {% if product.variants.size > 1 %}
+              <span class="actual-price" itemprop="price">{{ product.price | money }}</span>&nbsp;<span class="compare-price"></span>
+            {% else %}
+              <span class="actual-price" itemprop="price">{{ product.price | money }}</span>{% if product.compare_at_price > product.price %}&nbsp;<span class="compare-price">Was {{ product.compare_at_price_max | money }}</span>{% endif %}         
+            {% endif %}
+          </p>
+        </div>
+
+        <div class="show-for-small hide-for-ie9-down">
+          <div class="photos">
+            {% if product.images.size == 0 %}
+            
+              <div class="container clearfix">
+                <img src="{{ '' | product_img_url: 'grande' }}" data-zoom="{{ image.src | product_img_url: '1024x1024' }}" alt="" />
+              </div><!-- #product-photo-container -->
+              
+            {% else %}
+              
+              <div class="container clearfix">
+                {% for image in product.images %}
+                <a class="photo" href="{{ image.src | product_img_url: '1024x1024' }}" data-zoom="{{ image.src | product_img_url: '1024x1024' }}" rel="gallery">
+                  <img src="{{ image.src | product_img_url: 'grande' }}" alt="{{ image.alt | escape }}" />
+                </a>
+                {% endfor %}
+              </div><!-- #product-photo-container -->
+              
+            {% endif %}
+          </div><!-- .photos -->
+
+          <div class="thumbs">
+            {% if product.images.size > 1 %}
+              <ul class="clearfix">
+                {% for image in product.images %}
+                  <li class="thumb">
+                    <img src="{{ image.src | product_img_url: 'small' }}" alt="{{ image.alt | escape }}" />
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+        </div>
+        
+        
+        <div class="variants {% unless product.variants.size > 1 %}hidden{% endunless %}">
+
+          <select id="variant-listbox" name="id" class="medium">
+            {% for variant in product.variants %}
+            <option {% if variant.inventory_quantity <= 0 and variant.available == false %}DISABLED {% endif %} value="{{ variant.id }}">{{ variant.title }} - {{ variant.price | money }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="quanity-cart-row clearfix">
+          {% include 'snippet-quantity' %}
+
+          <div class="add-to-cart{% unless product.available %} disabled{% endunless %}">
+            <input type="submit" name="add" id="add" value="Add to cart" class="purchase button">
+            {% if product.variants.size > 1 %}
+              <span class="sold-out long disabled">This variant is sold out please select another</span>
+            {% else %}
+              <span class="sold-out long disabled">This product is currently sold out</span>
+            {% endif %}
+
+          </div>
+        </div>
+
+        <div class="backorder" class="hidden">
+          <p>{{ settings.back_order_msg | replace: '%s', '<span class="selected-variant"></span>' }}</p>
+        </div>
+    </form>
+   
+
+      <div class="thumbs show-for-medium-up show-for-ie9-down">
+        {% if product.images.size > 1 %}
+          <ul class="clearfix row">
+            {% for image in product.images %}
+              <li class="thumb">
+                <img src="{{ image.src | product_img_url: 'small' }}" alt="{{ image.alt | escape }}" />
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+
+      <div itemprop="description" class="description show-for-medium-down colored-links rte-content hide-for-ie9-down">
+        {{ product.description }}
+      </div>
+
+    </div> <!-- .left-column -->
+  
+    <div class="middle-column photos left columns large-6 show-for-medium-up show-for-ie9-down">
+      {% if product.images.size == 0 %}
+      
+        <div class="container clearfix">
+          <a class="photo" href="{{ image.src | product_img_url: '1024x1024' }}" data-zoom="{{ image.src | product_img_url: '1024x1024' }}">
+            <img src="{{ '' | product_img_url: 'grande' }}" data-zoom="{{ image.src | product_img_url: '1024x1024' }}" alt="" />
+          </a>
+        </div><!-- #product-photo-container -->
+        
+      {% else %}
+        
+        <div class="container clearfix">
+          {% for image in product.images %}
+          <a class="photo" href="{{ image.src | product_img_url: '1024x1024' }}" data-zoom="{{ image.src | product_img_url: '1024x1024' }}" rel="gallery">
+            <img src="{{ image.src | product_img_url: 'grande' }}" alt="{{ image.alt | escape }}" />
+          </a>
+          {% endfor %}
+        </div><!-- #product-photo-container -->
+        
+      {% endif %}
+
+    </div><!-- #product-photos -->
+
+    <div class="right-column description columns large-3">
+      <div itemprop="description colored-links rte-content">
+        {{ product.description }}
+      </div>
+    </div>
+  </div>
+</article>
+
+
+{% if settings.product-share-this-show %}
+<section class="row social-share">
+  <div class="columns">
+    {% include 'snippet-product-share' with 'product-template' %}
+  </div>
+</section>
+{% endif %}
+
+{% if settings.product-similar-products-show %}
+  {% include 'snippet-related-products' %}
+{% endif %}
+
+{% if settings.product-modal-enabled %}
+<div class="modal">
+  <div class="loading"></div>
+  <a aria-hidden="true" class="prev glyph slider-left"></a>
+  <a aria-hidden="true" class="close glyph cross"></a>
+  <a aria-hidden="true" class="next glyph slider-right"></a>
+  <div class="slides"></div>
+</div>
+<div class="modal-mask"></div>
+{% endif %}
+
+{% if product.variants.size > 1 %}
+<script>
+  var selectCallback = function(variant, selector) {
+    jQuery('.compare-price').html('');
+
+    if (variant && variant.available) {
+      jQuery(".add-to-cart").removeClass("disabled");
+    } else {
+      jQuery(".add-to-cart").addClass("disabled");
+    }
+
+    if (variant) { // combination of variants might not exist
+      jQuery('.actual-price').html(Shopify.formatMoney(variant.price, "{{ shop.money_format }}"));
+    
+      if (variant.compare_at_price > variant.price) {
+        jQuery('.compare-price').html("Was " + Shopify.formatMoney(variant.compare_at_price, "{{ shop.money_format }}"));
+      }
+    }
+  };
+
+  jQuery(document).ready(function($){
+    new Shopify.OptionSelectors("variant-listbox", { product: {{ product | json }}, onVariantSelected: selectCallback });
+    $(".custom.dropdown").hide();
+
+     // Add label if only one product option and it isn't 'Title'.
+    {% if product.options.size == 1 and product.options.first != 'Title' %}
+      $('.selector-wrapper:eq(0)').prepend('<label>{{ product.options.first }}</label>');
+    {% endif %}
+
+     // Auto-select first available variant on page load.
+    {% assign found_one_in_stock = false %}
+    {% for variant in product.variants %}
+     {% if variant.available and found_one_in_stock == false %}
+        {% assign found_one_in_stock = true %}
+        {% for option in product.options %}
+       $('.single-option-selector:eq({{ forloop.index0 }})').val({{ variant.options[forloop.index0] | json }}).trigger('change');
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+
+    $(".selector-wrapper .single-option-selector").each(Foundation.libs.forms.append_custom_select);
+    $('select.single-option-selector:eq(0)').trigger('change');
+    $("select.single-option-selector").change(function () {
+      Foundation.libs.forms.refresh_custom_select($(this), true);
+    });
+
+    // hide listboxes with only 1 variant
+    // $('.variants .custom.dropdown ul').each(function(){
+    //   if ($(this).children().length == 1) {
+    //     $(this).parent().hide();
+    //   } 
+    // });
+   
+  });
+  </script>
+  {% endif %}

@@ -1,0 +1,12 @@
+---
+:api_key: d109a6bf4d3427b00bdbcdab886aed13
+:password: c474ef1cb3dbb9c6b34fa10a9586a304
+:store: hygge-coffee-co.myshopify.com
+:theme_id: 
+:whitelist_files:
+- layout/
+- assets/
+- config/
+- snippets/
+- templates/
+- locales/
