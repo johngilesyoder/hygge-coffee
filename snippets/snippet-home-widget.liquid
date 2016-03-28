@@ -95,14 +95,9 @@
 	{% assign widget_username = widget | append: "-username" %}
 	{% assign widget_username = settings[widget_username] %}
 
-	<div class="instagram-widget">
+	<div class="instagram-widget" data-username="{{ widget_username }}">
 		<h3 class="title"><a target="_blank" href="http://instagram.com/{{ widget_username }}">Instagram</a></h3>
-
-		<div class="overlay">
-			<a target="_blank" href="http://instagram.com/{{ widget_username }}"></a>
-		</div>
-		<iframe class="iframe" src="http://widget.stagram.com/in/{{ widget_username }}?s=150&w=2&h=2&b=false&p=15" allowtransparency="true" frameborder="0" scrolling="no"  ></iframe>
-
+		<div class="items"></div>
 	</div>
 
 {% elsif type == 'blog' %}

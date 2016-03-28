@@ -4,7 +4,7 @@
   $(document).foundation();
 
   jQuery(function($) {
-    var FullscreenSlider, HEADER, PAGE, VideoModal, addToCart, addToCartFail, addToCartPass, cart_dropdown_timer, fadeOutCartDropdown, fullscreen_slider, imgZoom, isFirefox, large_photos, large_thumbs, log, mainMenu, mobileMenu, page_content, productModal, recentCartItemPopUp, retinaLogo, searchAndAccount, slideDownCartDropdown, smallPromos, small_photos, small_thumbs, startTimer, stickyFooter, stopResetTimer, toggleCartDropdown, validateSize;
+    var FullscreenSlider, HEADER, PAGE, VideoModal, addToCart, addToCartFail, addToCartPass, cart_dropdown_timer, fadeOutCartDropdown, fullscreen_slider, instagramFeed, imgZoom, isFirefox, large_photos, large_thumbs, log, mainMenu, mobileMenu, page_content, productModal, recentCartItemPopUp, retinaLogo, searchAndAccount, slideDownCartDropdown, smallPromos, small_photos, small_thumbs, startTimer, stickyFooter, stopResetTimer, toggleCartDropdown, validateSize;
     PAGE = $('body');
     HEADER = $('.main-header');
     log = function(value) {
@@ -171,6 +171,49 @@
       });
     };
     mobileMenu();
+    instagramFeed = function() {
+      var access_token, getImages, items_to_load, username;
+      access_token = home_widget_instagram_access_token;
+      username = $('.instagram-widget').attr('data-username');
+      if (access_token.length < 1 || $('.instagram-widget').length < 1 || username.length < 1) {
+        return false;
+      }
+      items_to_load = 6;
+      if (!home_widget_twitter_enabled && !home_widget_blog_enabled) {
+        items_to_load += 6;
+        $('.instagram-widget .items').addClass('wide');
+      }
+      getImages = function() {
+        return $.ajax({
+          dataType: "jsonp",
+          url: 'https://api.instagram.com/v1/users/self/media/recent/?access_token=' + access_token + '&count=' + items_to_load,
+          success: function(response) {
+            var data, i, img_src, _i, _ref, _results;
+            if (response.meta.code === 200) {
+              data = response.data;
+              _results = [];
+              for (i = _i = 0, _ref = items_to_load - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+                if (data[i]) {
+                  img_src = data[i].images.low_resolution.url;
+                  img_src = img_src.replace("http:", "https:");
+                  _results.push($('.instagram-widget .items').append('<a class="item" target="_blank" href="' + data[i].link + '"><img src="' + img_src + '" /></a>'));
+                } else {
+                  _results.push(void 0);
+                }
+              }
+              return _results;
+            } else {
+              return $('.instagram-widget .items').append('<p class="error">' + response.meta.error_message + '</p><p class="colored-links">Check the <strong>Homepage - social feeds</strong> section in your <a target="_blank" href="/admin/themes">theme settings</a>.</p>');
+            }
+          },
+          error: function(jqXHR, textStatus) {
+            console.log(jqXHR);
+            return console.log(textStatus);
+          }
+        });
+      };
+      return getImages();
+    };
     VideoModal = (function() {
       function VideoModal(video) {
         this.createIframe = __bind(this.createIframe, this);
